@@ -38,7 +38,8 @@ app.post('/webhook', (req, res) => {
       'hostname': 'api.line.me',
       'path': '/v2/bot/message/reply',
       'method': 'POST',
-      'headers': headers
+      'headers': headers,
+      'body': body
     };
 
     const request = https.request(webhookOptions, res => {
