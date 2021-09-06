@@ -2,17 +2,39 @@ const https = require('https')
 const express = require('express')
 const line = require('@line/bot-sdk')
 
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
+const config = {
+  channelAccessToken: process.env.LINE_ACCESS_TOKEN,
+  channelSecret: process.env.CHANNEL_SECRET
+};
+
+const client = new line.Client(config);
 
 const app = express();
 
 app.get('/', (req, res) => {
-  const name = req.query.name;
-  if (name) {
-    console.log(name);
-  }
-  res.send(`Hello ${name ?? 'Unknown'}`);
+  res.sendStatus(200);
 });
 
-app.listen(PORT, () => console.log(`Listening on :${PORT}`));
+app.post('/webhook', line.middleware(config), (req, res) => {
+  Promise
+    .all(req.body.events.map(handleEvent))
+    .then((result) => res.json(result))
+    .catch((err) => {
+      console.error(err);
+      res.status(500).end();
+    });
+});
+
+function handleEvent(event) {
+  if (event.type !== 'message' || event.message.type !== 'text') {
+    return Promise.resolve(null);
+  }
+
+  const echo = { type: 'text', text: event.message.text };
+
+  return client.replyMessage(event.replyToken, echo);
+}
+
+app.listen(port, () => console.log(`Listening on :${port}`));
