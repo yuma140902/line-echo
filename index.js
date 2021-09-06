@@ -10,32 +10,41 @@ const config = {
 };
 
 const dic = {
-  'a': 'apple',
-  'b': 'banana',
-  'c': 'cacao',
-  'd': 'domain',
-  'e': 'e-mail',
-  'f': 'family',
-  'g': 'go',
-  'h': 'hey',
-  'i': 'internet',
-  'j': 'Japan',
-  'k': 'kid',
-  'l': 'lily',
-  'm': 'mom',
-  'n': 'no',
-  'o': 'occur',
-  'p': 'piano',
-  'q': 'quantum',
-  'r': 'random',
-  's': 'step',
-  't': 'tech',
-  'u': 'ultra',
-  'v': 'vector',
-  'w': 'win',
-  'x': 'x-server',
-  'y': 'yes',
-  'z': 'zoom'
+  'a': ['apple', 'ant', 'amazon'],
+  'b': ['banana'],
+  'c': ['cacao'],
+  'd': ['domain'],
+  'e': ['e-mail'],
+  'f': ['family'],
+  'g': ['go'],
+  'h': ['hey'],
+  'i': ['internet'],
+  'j': ['Japan'],
+  'k': ['kid'],
+  'l': ['lily'],
+  'm': ['mom'],
+  'n': ['no'],
+  'o': ['occur'],
+  'p': ['piano'],
+  'q': ['quantum'],
+  'r': ['random'],
+  's': ['step'],
+  't': ['tech'],
+  'u': ['ultra'],
+  'v': ['vector'],
+  'w': ['win'],
+  'x': ['x-server'],
+  'y': ['yes'],
+  'z': ['zoom']
+}
+
+// 半開区間 [begin, end)
+function rangedRandom(begin, end) {
+  return Math.floor(Math.random() * (end - begin)) + begin;
+}
+
+function selectRandom(array) {
+  return array[rangedRandom(0, array.length)];
 }
 
 const app = express();
@@ -56,7 +65,7 @@ function handleEvent(event) {
 
   const word = event.message.text;
   const lastletter = word.slice(-1).toLowerCase();
-  const replyWord = dic[lastletter];
+  const replyWord = selectRandom(dic[lastletter]);
 
   return client.replyMessage(event.replyToken, {
     type: 'text',
