@@ -32,12 +32,13 @@ app.post('/webhook', line.middleware(config), (req, res) => {
 });
 
 function handleEvent(event) {
-  console.log("event:", JSON.stringify(event));
+  console.log("event:", event);
 
   if (event.type !== 'message' || event.message.type !== 'text') {
     return Promise.resolve(null);
   }
 
+  console.log("dic_path:", dic_path);
   kuromoji.builder({ dicPath: dic_path }).build(function (err, tokenizer) {
     // tokenizer is ready
     var path = tokenizer.tokenize(event.message.text);
@@ -45,9 +46,8 @@ function handleEvent(event) {
   });
 
   const response = {
-    "type": "image",
-    "originalContentUrl": "https://public.potaufeu.asahi.com/b4e7-p/picture/26282214/7d014eead948b196890a4c8491594f33_640px.jpg",
-    "previewImageUrl": "https://static.minne.com/profiles/8909705/large/31d7ac414ba91e999875c7c0871871bf15034323.gif?1528854093"
+    "type": "text",
+    "text": event.message.text
   };
 
   return client.replyMessage(event.replyToken, response);
