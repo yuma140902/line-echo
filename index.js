@@ -32,13 +32,14 @@ app.post('/webhook', line.middleware(config), (req, res) => {
 });
 
 function handleEvent(event) {
-  console.log("event:", event);
+  console.log("event:", JSON.stringify(event));
 
   if (event.type !== 'message' || event.message.type !== 'text') {
     return Promise.resolve(null);
   }
 
   console.log("dic_path:", dic_path);
+  console.log("__dirname", __dirname);
   kuromoji.builder({ dicPath: dic_path }).build(function (err, tokenizer) {
     // tokenizer is ready
     var path = tokenizer.tokenize(event.message.text);
