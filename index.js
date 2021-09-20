@@ -32,9 +32,15 @@ function handleEvent(event) {
     return Promise.resolve(null);
   }
 
-  const echo = { type: 'text', text: event.message.text };
+  const response = {
+    "type": "action",
+    "action": {
+      "type": "cameraRoll",
+      "label": "Send photo"
+    }
+  };
 
-  return client.replyMessage(event.replyToken, echo);
+  return client.replyMessage(event.replyToken, response);
 }
 
 app.listen(port, () => console.log(`Listening on :${port}`));
