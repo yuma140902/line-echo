@@ -4,7 +4,7 @@ const express = require('express')
 const line = require('@line/bot-sdk')
 const kuromoji = require('kuromoji')
 
-const dic_path = path.join(__dirname, '../node_modules/kuromoji/dict') + '/'
+const dic_path = path.join(__dirname, './node_modules/kuromoji/dict') + '/'
 
 const port = process.env.PORT || 3000;
 
