@@ -1,6 +1,9 @@
 const https = require('https')
 const express = require('express')
 const line = require('@line/bot-sdk')
+const kuromoji = require('kuromoji')
+
+const dic_path = path.join(__dirname, '../node_modules/kuromoji/dict') + '/'
 
 const port = process.env.PORT || 3000;
 
@@ -28,9 +31,17 @@ app.post('/webhook', line.middleware(config), (req, res) => {
 });
 
 function handleEvent(event) {
+  console.log("event:", JSON.stringify(event));
+
   if (event.type !== 'message' || event.message.type !== 'text') {
     return Promise.resolve(null);
   }
+
+  kuromoji.builder({ dicPath: dic_path }).build(function (err, tokenizer) {
+    // tokenizer is ready
+    var path = tokenizer.tokenize(event.message.text);
+    console.log("tokens:", path);
+  });
 
   const response = {
     "type": "image",
