@@ -33,11 +33,9 @@ function handleEvent(event) {
   }
 
   const response = {
-    "type": "action",
-    "action": {
-      "type": "cameraRoll",
-      "label": "Send photo"
-    }
+    "type": "image",
+    "originalContentUrl": "https://public.potaufeu.asahi.com/b4e7-p/picture/26282214/7d014eead948b196890a4c8491594f33_640px.jpg",
+    "previewImageUrl": "https://static.minne.com/profiles/8909705/large/31d7ac414ba91e999875c7c0871871bf15034323.gif?1528854093"
   };
 
   return client.replyMessage(event.replyToken, response);
