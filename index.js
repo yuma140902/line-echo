@@ -48,6 +48,13 @@ function textResponse(text) {
   };
 }
 
+function randomRanged(begin, end) {
+  begin = Math.ceil(begin);
+  end = Math.floor(end);
+  return Math.floor(Math.random() * (end - begin) + begin);
+}
+
+
 function handleEvent(event) {
   console.log('event:', JSON.stringify(event));
 
@@ -60,13 +67,16 @@ function handleEvent(event) {
     const firstKana = kana_util.firstKana(result.kana);
     const lastKana = kana_util.lastKana(result.kana);
 
+    // todo 前の言葉との連続性の確認と、データベースの更新処理と、新しい名詞を返す処理
 
+    const numWords = freqlist[lastKana].length;
+    const nextWord = freqlist[lastKana][randomRanged(0, numWords)];
 
     const response = [
       textResponse(`名詞: ${result.surface}、よみ: ${result.kana}`),
-      textResponse(`最初の文字は${firstKana}、最後の文字は${lastKana}`)
+      textResponse(`最初の文字は${firstKana}、最後の文字は${lastKana}`),
+      textResponse(`次の言葉は${nextWord[1]} (${nextWord[0]}) です`)
     ];
-    // todo 前の言葉との連続性の確認と、データベースの更新処理と、新しい名詞を返す処理
     return client.replyMessage(event.replyToken, response);
   } else {
     let response;
