@@ -1,3 +1,5 @@
+'use strict'
+
 const https = require('https')
 const path = require('path')
 const express = require('express')
@@ -32,6 +34,13 @@ app.post('/webhook', line.middleware(config), (req, res) => {
     });
 });
 
+function textResponse(text) {
+  return {
+    "type": "text",
+    "text": text
+  };
+}
+
 function handleEvent(event) {
   console.log("event:", JSON.stringify(event));
 
@@ -43,22 +52,30 @@ function handleEvent(event) {
     const result = word_analyzer.analyzeWord(tokenizer, event.message.text);
 
     if (result.succeeded) {
-      const response = {
-        "type": "text",
-        "text": `名詞: ${result.surface}、よみ: ${result.kana}`
-      };
+      const response = textResponse(`名詞: ${result.surface}、よみ: ${result.kana}`);
+      // todo 前の言葉との連続性の確認と、データベースの更新処理と、新しい名詞を返す処理
       return client.replyMessage(event.replyToken, response);
     } else {
-      const response = [
-        {
-          "type": "text",
-          "text": JSON.stringify(result.tokens, undefined, '　')
-        },
-        {
-          "type": "text",
-          "text": `${event.message.text} は名詞ではないようです`
-        }
-      ];
+      let response;
+      if (result.error_reason === word_analyzer.error_reasons.COMPOUND_NOUN) {
+        const surfaces = result.tokens.map(token => token.surface_form);
+        response = [
+          textResponse(`${event.message.text} は ${surfaces.join(" + ")} の複合語です。`),
+          textResponse('実在の言葉かどうか判定できないので、複合語は使えません。')
+        ];
+      }
+      else if (result.error_reason === word_analyzer.error_reasons.NOT_A_NOUN) {
+        response = [
+          textResponse(`${event.message.text} は ${result.pos} です。`),
+          textResponse("名詞しか使えません。")
+        ];
+      }
+      else if (result.error_reason === word_analyzer.error_reasons.NOT_A_WORD) {
+        response = [
+          textResponse(JSON.stringify(result.tokens, undefined, '　')),
+          textResponse(`${event.message.text} は名詞ではないようです`)
+        ];
+      }
       return client.replyMessage(event.replyToken, response);
     }
 
