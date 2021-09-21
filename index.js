@@ -62,12 +62,14 @@ function handleEvent(event) {
 
     if (lastKana === 'ン') {
       return db.removeUserLastKana(userId)
-        .then(() => client.replyMessage(event.replyToken, textResponse('ンで終わったのであなたの負けです')));
+        .then(() => client.replyMessage(event.replyToken,
+          [textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
+          textResponse('ンで終わったのであなたの負けです')]));
     }
 
     return db.obtainUserLastKana(userId)
       .then(
-        botLastKana => {
+        async botLastKana => {
           if (!botLastKana || firstKana === botLastKana) {
             const nextWord = next_word(tokenizer, lastKana);
             if (!nextWord) return client.replyMessage(event.replyToken, textResponse("参りました"));
@@ -76,12 +78,8 @@ function handleEvent(event) {
               textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
               textResponse(`${nextWord.word} (${nextWord.kana} : ${nextBotLastKana}) `)
             ];
-            return db.updateUserLastKana(userId, nextBotLastKana)
-              .then(
-                () => {
-                  return client.replyMessage(event.replyToken, response);
-                }
-              )
+            await db.updateUserLastKana(userId, nextBotLastKana)
+            return client.replyMessage(event.replyToken, response)
           }
           else {
             const response = [
@@ -93,8 +91,6 @@ function handleEvent(event) {
 
         }
       );
-
-
 
   }
   else {
