@@ -10,12 +10,11 @@ const pool = new Pool({
 });
 
 const updateUserLastKana = (userId, lastKana) => {
-  console.log("start updating");
   const sql = 'INSERT INTO "UserLastLetter" (user_id, last_letter) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET last_letter = $2';
   return pool
     .query(sql, [userId, lastKana])
     .then(res => {
-      console.log(res);
+      // pass
     })
     .catch(err => {
       console.error("エラー: updateUserLastKana()");
@@ -24,17 +23,15 @@ const updateUserLastKana = (userId, lastKana) => {
 }
 
 const obtainUserLastKana = (userId) => {
-  console.log("start obtaining");
   const sql = 'SELECT last_letter from "UserLastLetter" WHERE user_id = $1 LIMIT 1';
   return pool
     .query(sql, [userId])
     .then(res => {
-      console.log(res);
       return res.rows[0].last_letter;
     })
-    .catch(err => {
-      console.error("エラー: obtainUserLastKana()");
-      console.error(err);
+    .catch(_ => {
+      // pass
+      // ゲーム開始時は必ずエラーになるのでエラーログは出力しない
     });
 }
 
@@ -42,8 +39,8 @@ const removeUserLastKana = (userId) => {
   const sql = 'DELETE FROM "UserLastLetter" WHERE user_id = $1';
   return pool
     .query(sql, [userId])
-    .then(res => {
-      console.log(res);
+    .then(_ => {
+      // pass
     })
     .catch(err => {
       console.error("エラー: removeUserLastKana()");
