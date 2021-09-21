@@ -1,5 +1,6 @@
 'use strict'
 
+const word_verifier = require('./word-verifier')
 const freqlist = require('./rsc/freqlist_ja.json')
 
 // ===== 次の言葉を考えるモジュール =====
@@ -18,7 +19,7 @@ const nextWord = (lastKana) => {
     do {
       word = freqlist[lastKana][randomRanged(0, numWords)];
       ++trial;
-    } while (!word_verifier.analyzeWord(tokenizer, word[1]).succeeded);
+    } while (!word_verifier.verifyWord(tokenizer, word[1]).succeeded);
     console.log("trial", trial);
     return {
       kana: word[0],
