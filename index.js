@@ -110,7 +110,7 @@ function getTokenizerPromise() {
       // tokenizer is ready
       resolve(tokenizer);
       console.log('Loaded Kuromoji.js');
-      if(err) {
+      if (err) {
         console.error(err);
       }
     });
