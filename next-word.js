@@ -11,7 +11,7 @@ function randomRanged(begin, end) {
   return Math.floor(Math.random() * (end - begin) + begin);
 }
 
-const nextWord = (lastKana) => {
+const nextWord = (tokenizer, lastKana) => {
   let word;
   if (freqlist[lastKana]) {
     const numWords = freqlist[lastKana].length;

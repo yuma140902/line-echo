@@ -60,7 +60,7 @@ function handleEvent(event) {
 
     // todo 前の言葉との連続性の確認と、データベースの更新処理と、新しい名詞を返す処理
 
-    const nextWord = next_word(lastKana);
+    const nextWord = next_word(tokenizer, lastKana);
 
     const response = [
       textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
