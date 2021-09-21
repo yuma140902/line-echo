@@ -72,9 +72,12 @@ function handleEvent(event) {
     let nextWord;
     if (freqlist[lastKana]) {
       const numWords = freqlist[lastKana].length;
+      let trial = 0;
       do {
         nextWord = freqlist[lastKana][randomRanged(0, numWords)];
+        ++trial;
       } while (!word_analyzer.analyzeWord(tokenizer, nextWord[1]).succeeded);
+      console.log("trial", trial);
     }
     else {
       console.assert(false);
