@@ -7,7 +7,7 @@ const error_reasons = {
   COMPOUND_NOUN: "複合語",
   NOT_A_NOUN: "名詞ではない",
   KANA_INCLUDED: "よみがなは不要",
-  UNKNOWN_NOUN: "辞書に載っていない名詞"
+  UNKNOWN_WORD: "辞書に載っていない名詞"
 }
 
 // tokenが既知の単語であり、かつその品詞がposであるかどうか確認する
@@ -38,11 +38,11 @@ const analyzeWord = (tokenizer, text) => {
       kana: tokens[0].reading
     };
   }
-  else if(tokens.length === 1 && tokens[0].pos === '名詞') {
+  else if(tokens.length === 1 && tokens[0].word_type === 'UNKNOWN') {
     return {
       succeeded: false,
       tokens: tokens,
-      error_reason: error_reasons.UNKNOWN_NOUN
+      error_reason: error_reasons.UNKNOWN_WORD
     }
   }
   // 1単語だが名詞ではないとき

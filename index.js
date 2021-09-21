@@ -71,7 +71,7 @@ function handleEvent(event) {
           textResponse('実在する言葉かどうか判定できないので、複合語は使えません。')
         ];
       }
-      else if (result.error_reason === word_analyzer.error_reasons.UNKNOWN_NOUN) {
+      else if (result.error_reason === word_analyzer.error_reasons.UNKNOWN_WORD) {
         response = [
           textResponse(`は辞書に載っていません。`),
           textResponse("辞書に載っている名詞しか使えません")
