@@ -60,20 +60,20 @@ function handleEvent(event) {
       if (result.error_reason === word_analyzer.error_reasons.COMPOUND_NOUN) {
         const surfaces = result.tokens.map(token => token.surface_form);
         response = [
-          textResponse(`${event.message.text} は ${surfaces.join(" + ")} の複合語です。`),
-          textResponse('実在の言葉かどうか判定できないので、複合語は使えません。')
+          textResponse(`${event.message.text}は ${surfaces.join(" + ")} の複合語です。`),
+          textResponse('実在する言葉かどうか判定できないので、複合語は使えません。')
         ];
       }
       else if (result.error_reason === word_analyzer.error_reasons.NOT_A_NOUN) {
         response = [
-          textResponse(`${event.message.text} は ${result.pos} です。`),
+          textResponse(`「${event.message.text}」は${result.pos}です。`),
           textResponse("名詞しか使えません。")
         ];
       }
       else if (result.error_reason === word_analyzer.error_reasons.NOT_A_WORD) {
         response = [
           textResponse(JSON.stringify(result.tokens, undefined, '　')),
-          textResponse(`${event.message.text} は名詞ではないようです`)
+          textResponse(`「${event.message.text}」は名詞ではないようです`)
         ];
       }
       return client.replyMessage(event.replyToken, response);
