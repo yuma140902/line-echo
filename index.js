@@ -7,10 +7,8 @@ const line = require('@line/bot-sdk')
 const kuromoji = require('kuromoji')
 const word_verifier = require('./word-verifier')
 const kana_util = require('./kana-util')
+const next_word = require('./next-word')
 const db = require('./db')
-const freqlist = require('./rsc/freqlist_ja.json')
-
-console.log('freqlist:', freqlist["ア"][0]);
 
 const dic_path = path.join(__dirname, './node_modules/kuromoji/dict') + '/'
 
@@ -48,13 +46,6 @@ function textResponse(text) {
   };
 }
 
-function randomRanged(begin, end) {
-  begin = Math.ceil(begin);
-  end = Math.floor(end);
-  return Math.floor(Math.random() * (end - begin) + begin);
-}
-
-
 function handleEvent(event) {
   console.log('event:', JSON.stringify(event));
 
@@ -69,28 +60,15 @@ function handleEvent(event) {
 
     // todo 前の言葉との連続性の確認と、データベースの更新処理と、新しい名詞を返す処理
 
-    let nextWord;
-    if (freqlist[lastKana]) {
-      const numWords = freqlist[lastKana].length;
-      let trial = 0;
-      do {
-        nextWord = freqlist[lastKana][randomRanged(0, numWords)];
-        ++trial;
-      } while (!word_verifier.analyzeWord(tokenizer, nextWord[1]).succeeded);
-      console.log("trial", trial);
-    }
-    else {
-      console.assert(false);
-      return client.replyMessage(event.replyToken,
-        textResponse(`[実績解除] 有能デバッガー\nあなたはこのBOTの開発者が気づかなかったバグを見つけ出した！`));
-    }
+    const nextWord = next_word(lastKana);
 
     const response = [
       textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
-      textResponse(`${nextWord[1]} (${nextWord[0]} : ${kana_util.lastKana(nextWord[0])}) `)
+      textResponse(`${nextWord.word} (${nextWord.kana} : ${kana_util.lastKana(nextWord.kana)}) `)
     ];
     return client.replyMessage(event.replyToken, response);
-  } else {
+  }
+  else {
     let response;
     if (result.error_reason === word_verifier.error_reasons.COMPOUND_NOUN) {
       const surfaces = result.tokens.map(token => token.surface_form);
