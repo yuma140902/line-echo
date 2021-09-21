@@ -83,14 +83,6 @@ function handleEvent(event) {
         textResponse('名詞しか使えません。')
       ];
     }
-    else if (result.error_reason === word_analyzer.error_reasons.KANA_INCLUDED) {
-      response = [
-        textResponse('入力に括弧が含まれています。'),
-        textResponse('心優しいあなたはおそらく読み仮名を入力してくれたのでしょう。'),
-        textResponse('でもこのBOTは漢字が読めるので読み仮名は不要です。'),
-        textResponse('いくらでも難読単語を送りつけてください。')
-      ];
-    }
     else if (result.error_reason === word_analyzer.error_reasons.NOT_A_WORD) {
       const tokens = result.tokens.map(token => `${token.surface_form} : ${word_analyzer.friendlyPos(token)}`);
       response = [
