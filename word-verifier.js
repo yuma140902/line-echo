@@ -23,7 +23,7 @@ const preprocess = (text) =>
   kana_util.han2zen(text.trim());
 
 
-const analyzeWord = (tokenizer, text) => {
+const verifyWord = (tokenizer, text) => {
   text = preprocess(text);
 
   const tokens = tokenizer.tokenize(text);
@@ -74,6 +74,6 @@ const analyzeWord = (tokenizer, text) => {
 }
 
 
-module.exports.analyzeWord = analyzeWord;
+module.exports.analyzeWord = verifyWord;
 module.exports.friendlyPos = friendlyPos;
 module.exports.error_reasons = error_reasons;

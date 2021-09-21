@@ -5,7 +5,7 @@ const path = require('path')
 const express = require('express')
 const line = require('@line/bot-sdk')
 const kuromoji = require('kuromoji')
-const word_analyzer = require('./word-analyzer')
+const word_verifier = require('./word-verifier')
 const kana_util = require('./kana-util')
 const db = require('./db')
 const freqlist = require('./rsc/freqlist_ja.json')
@@ -61,7 +61,7 @@ function handleEvent(event) {
   if (event.type !== 'message' || event.message.type !== 'text') {
     return Promise.resolve(null);
   }
-  const result = word_analyzer.analyzeWord(tokenizer, event.message.text);
+  const result = word_verifier.verifyWord(tokenizer, event.message.text);
 
   if (result.succeeded) {
     const firstKana = kana_util.firstKana(result.kana);
@@ -76,7 +76,7 @@ function handleEvent(event) {
       do {
         nextWord = freqlist[lastKana][randomRanged(0, numWords)];
         ++trial;
-      } while (!word_analyzer.analyzeWord(tokenizer, nextWord[1]).succeeded);
+      } while (!word_verifier.analyzeWord(tokenizer, nextWord[1]).succeeded);
       console.log("trial", trial);
     }
     else {
@@ -92,27 +92,27 @@ function handleEvent(event) {
     return client.replyMessage(event.replyToken, response);
   } else {
     let response;
-    if (result.error_reason === word_analyzer.error_reasons.COMPOUND_NOUN) {
+    if (result.error_reason === word_verifier.error_reasons.COMPOUND_NOUN) {
       const surfaces = result.tokens.map(token => token.surface_form);
       response = [
         textResponse(`${event.message.text}は ${surfaces.join(' + ')} の複合語です。`),
         textResponse('実在する言葉かどうか判定できないので、複合語は使えません。')
       ];
     }
-    else if (result.error_reason === word_analyzer.error_reasons.UNKNOWN_WORD) {
+    else if (result.error_reason === word_verifier.error_reasons.UNKNOWN_WORD) {
       response = [
         textResponse(`${event.message.text}は辞書に載っていません。`),
         textResponse('辞書に載っている名詞しか使えません')
       ];
     }
-    else if (result.error_reason === word_analyzer.error_reasons.NOT_A_NOUN) {
+    else if (result.error_reason === word_verifier.error_reasons.NOT_A_NOUN) {
       response = [
         textResponse(`「${event.message.text}」は${result.pos}です。`),
         textResponse('名詞しか使えません。')
       ];
     }
-    else if (result.error_reason === word_analyzer.error_reasons.NOT_A_WORD) {
-      const tokens = result.tokens.map(token => `${token.surface_form} : ${word_analyzer.friendlyPos(token)}`);
+    else if (result.error_reason === word_verifier.error_reasons.NOT_A_WORD) {
+      const tokens = result.tokens.map(token => `${token.surface_form} : ${word_verifier.friendlyPos(token)}`);
       response = [
         textResponse(`形態素解析の結果、\n${tokens.join('\n')}\nとなりました。`),
         textResponse(`「${event.message.text}」は名詞ではないのでしりとりには使えません。`)
