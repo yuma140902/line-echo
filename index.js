@@ -8,6 +8,9 @@ const kuromoji = require('kuromoji')
 const word_analyzer = require('./word-analyzer')
 const kana_util = require('./kana-util')
 const db = require('./db')
+const freqlist = require('./rsc/freqlist_ja.json')
+
+console.log('freqlist:', freqlist[0]);
 
 const dic_path = path.join(__dirname, './node_modules/kuromoji/dict') + '/'
 
