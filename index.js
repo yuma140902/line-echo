@@ -49,7 +49,7 @@ function textResponse(text) {
 function handleEvent(event) {
   console.log('event:', JSON.stringify(event));
 
-  if (event.type !== 'message' || event.message.type !== 'text') {
+  if (event.type !== 'message' || event.message.type !== 'text' || event.source.type !== 'user') {
     return Promise.resolve(null);
   }
   const result = word_verifier.verifyWord(tokenizer, event.message.text);
@@ -61,6 +61,12 @@ function handleEvent(event) {
     // todo 前の言葉との連続性の確認と、データベースの更新処理と、新しい名詞を返す処理
 
     const nextWord = next_word(tokenizer, lastKana);
+
+    const userId = event.source.userId;
+    console.log("obtain");
+    await db.obtainUserLastKana(userId);
+    console.log("update");
+    await db.updateUserLastKana(userId, lastKana);
 
     const response = [
       textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
