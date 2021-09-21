@@ -7,6 +7,7 @@ const line = require('@line/bot-sdk')
 const kuromoji = require('kuromoji')
 const word_analyzer = require('./word-analyzer')
 const kana_util = require('./kana-util')
+const db = require('./db')
 
 const dic_path = path.join(__dirname, './node_modules/kuromoji/dict') + '/'
 
@@ -68,6 +69,12 @@ function handleEvent(event) {
         response = [
           textResponse(`${event.message.text}は ${surfaces.join(" + ")} の複合語です。`),
           textResponse('実在する言葉かどうか判定できないので、複合語は使えません。')
+        ];
+      }
+      else if (result.error_reason === word_analyzer.error_reasons.UNKNOWN_NOUN) {
+        response = [
+          textResponse(`は辞書に載っていません。`),
+          textResponse("辞書に載っている名詞しか使えません")
         ];
       }
       else if (result.error_reason === word_analyzer.error_reasons.NOT_A_NOUN) {
