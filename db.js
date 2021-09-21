@@ -24,6 +24,7 @@ const updateUserLastKana = (userId, lastKana) => {
 }
 
 const obtainUserLastKana = (userId) => {
+  console.log("start obtaining");
   const sql = 'SELECT last_letter from "UserLastLetter" WHERE user_id = $1 LIMIT 1';
   return client.query(sql, [userId])
     .then(res => {
