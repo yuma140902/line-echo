@@ -12,7 +12,7 @@ const pool = new Pool({
 const updateUserLastKana = (userId, lastKana) => {
   console.log("start updating");
   const sql = 'INSERT INTO "UserLastLetter" (user_id, last_letter) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET last_letter = $2';
-  return pool.connect()
+  return pool
     .query(sql, [userId, lastKana])
     .then(res => {
       console.log(res);
@@ -26,7 +26,7 @@ const updateUserLastKana = (userId, lastKana) => {
 const obtainUserLastKana = (userId) => {
   console.log("start obtaining");
   const sql = 'SELECT last_letter from "UserLastLetter" WHERE user_id = $1 LIMIT 1';
-  return pool.connect()
+  return pool
     .query(sql, [userId])
     .then(res => {
       console.log(res);
@@ -40,7 +40,7 @@ const obtainUserLastKana = (userId) => {
 
 const removeUserLastKana = (userId) => {
   const sql = 'DELETE FROM "UserLastLetter" WHERE user_id = $1';
-  return pool.connect()
+  return pool
     .query(sql, [userId])
     .then(res => {
       console.log(res);
