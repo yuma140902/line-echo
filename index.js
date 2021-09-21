@@ -51,7 +51,7 @@ function handleEvent(event) {
   if (event.type !== 'message' || event.message.type !== 'text') {
     return Promise.resolve(null);
   }
-  const result = word_analyzer.analyzeWord(tokenizer, kana_util.han2zen(event.message.text));
+  const result = word_analyzer.analyzeWord(tokenizer, event.message.text);
 
   if (result.succeeded) {
     const firstKana = kana_util.firstKana(result.kana);

@@ -1,6 +1,8 @@
 'use strict'
+const kana_util = require('./kana-util')
 
 // ===== 形態素解析に関するモジュール =====
+
 
 const error_reasons = {
   NOT_A_WORD: "一単語ではない",
@@ -14,11 +16,16 @@ const error_reasons = {
 const posEqualsAndKnown = (token, pos) =>
   token.word_type === 'KNOWN' && token.pos === pos;
 
-const friendlyPos = (token) => 
+const friendlyPos = (token) =>
   (token.word_type === 'UNKNOWN' ? '辞書に載っていない' : '') + token.pos;
 
 
+const preprocess = (text) =>
+  kana_util.han2zen(text.trim());
+
+
 const analyzeWord = (tokenizer, text) => {
+  text = preprocess(text);
 
   // 丸括弧が含まれるときは、ユーザーがよみがなを入力してくれた可能性が高い
   if (text.includes('(') || text.includes(')') || text.includes('（') || text.includes('）')) {
@@ -38,7 +45,7 @@ const analyzeWord = (tokenizer, text) => {
       kana: tokens[0].reading
     };
   }
-  else if(tokens.length === 1 && tokens[0].word_type === 'UNKNOWN') {
+  else if (tokens.length === 1 && tokens[0].word_type === 'UNKNOWN') {
     return {
       succeeded: false,
       tokens: tokens,
