@@ -69,6 +69,8 @@ function handleEvent(event) {
       .then(
         botLastKana => {
           if (!botLastKana || firstKana === botLastKana) {
+            const nextWord = next_word(tokenizer, lastKana);
+            if (!nextWord) return client.replyMessage(event.replyToken, textResponse("参りました"));
             const nextBotLastKana = kana_util.lastKana(nextWord.kana);
             const response = [
               textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
@@ -92,7 +94,6 @@ function handleEvent(event) {
         }
       );
 
-    const nextWord = next_word(tokenizer, lastKana);
 
 
   }
