@@ -69,13 +69,23 @@ function handleEvent(event) {
 
     // todo 前の言葉との連続性の確認と、データベースの更新処理と、新しい名詞を返す処理
 
-    const numWords = freqlist[lastKana].length;
-    const nextWord = freqlist[lastKana][randomRanged(0, numWords)];
+    let nextWord;
+    if (freqlist[lastKana]) {
+      const numWords = freqlist[lastKana].length;
+      do {
+        nextWord = freqlist[lastKana][randomRanged(0, numWords)];
+      } while (!word_analyzer.analyzeWord(tokenizer, nextWord).succeeded);
+    }
+    else {
+      console.assert(false);
+      return client.replyMessage(event.replyToken,
+        textResponse(`[実績解除] 有能デバッガー\nあなたはこのBOTの開発者が気づかなかったバグを見つけ出した！`));
+    }
 
     const response = [
       textResponse(`名詞: ${result.surface}、よみ: ${result.kana}`),
       textResponse(`最初の文字は${firstKana}、最後の文字は${lastKana}`),
-      textResponse(`次の言葉は${nextWord[1]} (${nextWord[0]}) です`)
+      textResponse(`${nextWord[1]} (${nextWord[0]} : ${kana_util.lastKana(nextWord[0])}) `)
     ];
     return client.replyMessage(event.replyToken, response);
   } else {
