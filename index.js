@@ -51,64 +51,59 @@ function handleEvent(event) {
   if (event.type !== 'message' || event.message.type !== 'text') {
     return Promise.resolve(null);
   }
+  const result = word_analyzer.analyzeWord(tokenizer, kana_util.han2zen(event.message.text));
 
-  return Promise.resolve(tokenizer).then(tokenizer => {
-    const result = word_analyzer.analyzeWord(tokenizer, kana_util.han2zen(event.message.text));
-
-    if (result.succeeded) {
-      const firstKana = kana_util.firstKana(result.kana);
-      const lastKana = kana_util.lastKana(result.kana);
-      const response = [
-        textResponse(`名詞: ${result.surface}、よみ: ${result.kana}`),
-        textResponse(`最初の文字は${firstKana}、最後の文字は${lastKana}`)
+  if (result.succeeded) {
+    const firstKana = kana_util.firstKana(result.kana);
+    const lastKana = kana_util.lastKana(result.kana);
+    const response = [
+      textResponse(`名詞: ${result.surface}、よみ: ${result.kana}`),
+      textResponse(`最初の文字は${firstKana}、最後の文字は${lastKana}`)
+    ];
+    // todo 前の言葉との連続性の確認と、データベースの更新処理と、新しい名詞を返す処理
+    return client.replyMessage(event.replyToken, response);
+  } else {
+    let response;
+    if (result.error_reason === word_analyzer.error_reasons.COMPOUND_NOUN) {
+      const surfaces = result.tokens.map(token => token.surface_form);
+      response = [
+        textResponse(`${event.message.text}は ${surfaces.join(' + ')} の複合語です。`),
+        textResponse('実在する言葉かどうか判定できないので、複合語は使えません。')
       ];
-      // todo 前の言葉との連続性の確認と、データベースの更新処理と、新しい名詞を返す処理
-      return client.replyMessage(event.replyToken, response);
-    } else {
-      let response;
-      if (result.error_reason === word_analyzer.error_reasons.COMPOUND_NOUN) {
-        const surfaces = result.tokens.map(token => token.surface_form);
-        response = [
-          textResponse(`${event.message.text}は ${surfaces.join(' + ')} の複合語です。`),
-          textResponse('実在する言葉かどうか判定できないので、複合語は使えません。')
-        ];
-      }
-      else if (result.error_reason === word_analyzer.error_reasons.UNKNOWN_WORD) {
-        response = [
-          textResponse(`は辞書に載っていません。`),
-          textResponse('辞書に載っている名詞しか使えません')
-        ];
-      }
-      else if (result.error_reason === word_analyzer.error_reasons.NOT_A_NOUN) {
-        response = [
-          textResponse(`「${event.message.text}」は${result.pos}です。`),
-          textResponse('名詞しか使えません。')
-        ];
-      }
-      else if (result.error_reason === word_analyzer.error_reasons.KANA_INCLUDED) {
-        response = [
-          textResponse('入力に括弧が含まれています。'),
-          textResponse('心優しいあなたはおそらく読み仮名を入力してくれたのでしょう。'),
-          textResponse('でもこのBOTは漢字が読めるので読み仮名は不要です。'),
-          textResponse('いくらでも難読単語を送りつけてください。')
-        ];
-      }
-      else if (result.error_reason === word_analyzer.error_reasons.NOT_A_WORD) {
-        const tokens = result.tokens.map(token => `${token.surface_form} : ${word_analyzer.friendlyPos(token)}`);
-        response = [
-          textResponse(`形態素解析の結果、\n${tokens.join('\n')}\nとなりました。`),
-          textResponse(`「${event.message.text}」は名詞ではないのでしりとりには使えません。`)
-        ];
-      }
-      else {
-        console.assert(false);
-        response = textResponse(`[実績解除] 有能デバッガー\nあなたはこのBOTの開発者が気づかなかったバグを見つけ出した！`);
-      };
-      return client.replyMessage(event.replyToken, response);
     }
-
-
-  });
+    else if (result.error_reason === word_analyzer.error_reasons.UNKNOWN_WORD) {
+      response = [
+        textResponse(`は辞書に載っていません。`),
+        textResponse('辞書に載っている名詞しか使えません')
+      ];
+    }
+    else if (result.error_reason === word_analyzer.error_reasons.NOT_A_NOUN) {
+      response = [
+        textResponse(`「${event.message.text}」は${result.pos}です。`),
+        textResponse('名詞しか使えません。')
+      ];
+    }
+    else if (result.error_reason === word_analyzer.error_reasons.KANA_INCLUDED) {
+      response = [
+        textResponse('入力に括弧が含まれています。'),
+        textResponse('心優しいあなたはおそらく読み仮名を入力してくれたのでしょう。'),
+        textResponse('でもこのBOTは漢字が読めるので読み仮名は不要です。'),
+        textResponse('いくらでも難読単語を送りつけてください。')
+      ];
+    }
+    else if (result.error_reason === word_analyzer.error_reasons.NOT_A_WORD) {
+      const tokens = result.tokens.map(token => `${token.surface_form} : ${word_analyzer.friendlyPos(token)}`);
+      response = [
+        textResponse(`形態素解析の結果、\n${tokens.join('\n')}\nとなりました。`),
+        textResponse(`「${event.message.text}」は名詞ではないのでしりとりには使えません。`)
+      ];
+    }
+    else {
+      console.assert(false);
+      response = textResponse(`[実績解除] 有能デバッガー\nあなたはこのBOTの開発者が気づかなかったバグを見つけ出した！`);
+    };
+    return client.replyMessage(event.replyToken, response);
+  }
 
 
 }
