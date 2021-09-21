@@ -10,7 +10,7 @@ const kana_util = require('./kana-util')
 const db = require('./db')
 const freqlist = require('./rsc/freqlist_ja.json')
 
-console.log('freqlist:', freqlist[0]);
+console.log('freqlist:', freqlist["ア"][0]);
 
 const dic_path = path.join(__dirname, './node_modules/kuromoji/dict') + '/'
 
@@ -59,6 +59,9 @@ function handleEvent(event) {
   if (result.succeeded) {
     const firstKana = kana_util.firstKana(result.kana);
     const lastKana = kana_util.lastKana(result.kana);
+
+
+
     const response = [
       textResponse(`名詞: ${result.surface}、よみ: ${result.kana}`),
       textResponse(`最初の文字は${firstKana}、最後の文字は${lastKana}`)
