@@ -63,8 +63,11 @@ async function handleEvent(event) {
     if (lastKana === 'ン') {
       await db.removeUserLastKana(userId);
       return client.replyMessage(event.replyToken,
-        [textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
-        textResponse('ンで終わったのであなたの負けです')])
+        [
+          textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
+          textResponse('ンなので終了します'),
+          textResponse('再開するには適当な単語を言ってください')
+        ])
     }
 
     const botLastKana = await db.obtainUserLastKana(userId);
@@ -83,7 +86,7 @@ async function handleEvent(event) {
     }
     else {
       const response_1 = [
-        textResponse(`前の単語は${botLastKana}で終わりましたが、${event.message.text}は${firstKana}から始まります`),
+        textResponse(`前の単語は${botLastKana}で終わりましたが、${event.message.text} (${result.kana}) は${firstKana}から始まります`),
         textResponse(`${botLastKana}から始まる単語を入力してください`)
       ]
       return client.replyMessage(event.replyToken, response_1)
