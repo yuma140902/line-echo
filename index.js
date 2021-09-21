@@ -20,6 +20,8 @@ const config = {
 
 const client = new line.Client(config);
 
+let tokenizer;
+
 const app = express();
 
 app.get('/', (req, res) => {
@@ -50,7 +52,7 @@ function handleEvent(event) {
     return Promise.resolve(null);
   }
 
-  return getTokenizerPromise().then(tokenizer => {
+  return Promise.resolve(tokenizer).then(tokenizer => {
     const result = word_analyzer.analyzeWord(tokenizer, kana_util.han2zen(event.message.text));
 
     if (result.succeeded) {
@@ -59,7 +61,7 @@ function handleEvent(event) {
       const response = [
         textResponse(`名詞: ${result.surface}、よみ: ${result.kana}`),
         textResponse(`最初の文字は${firstKana}、最後の文字は${lastKana}`)
-    ];
+      ];
       // todo 前の言葉との連続性の確認と、データベースの更新処理と、新しい名詞を返す処理
       return client.replyMessage(event.replyToken, response);
     } else {
@@ -120,4 +122,7 @@ function getTokenizerPromise() {
   })
 }
 
-app.listen(port, () => console.log(`Listening on :${port}`));
+getTokenizerPromise().then(tokenizer_ => {
+  tokenizer = tokenizer_;
+  app.listen(port, () => console.log(`Listening on :${port}`));
+});
