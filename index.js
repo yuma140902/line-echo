@@ -32,8 +32,8 @@ app.get('/', (req, res) => {
 app.post('/webhook', line.middleware(config), (req, res) => {
   Promise
     .all(req.body.events.map(handleEvent))
-    .then((result) => res.json(result))
-    .catch((err) => {
+    .then(result => res.json(result))
+    .catch(err => {
       console.error(err);
       res.status(500).end();
     });
@@ -49,83 +49,78 @@ function textResponse(text) {
 async function handleEvent(event) {
   console.log('event:', JSON.stringify(event));
 
+  const reply = response => client.replyMessage(event.replyToken, response);
+
   if (event.type !== 'message' || event.message.type !== 'text' || event.source.type !== 'user') {
     return Promise.resolve(null);
   }
+
   const result = word_verifier.verifyWord(tokenizer, event.message.text);
 
   if (result.succeeded) {
     const firstKana = kana_util.firstKana(result.kana);
     const lastKana = kana_util.lastKana(result.kana);
-
-    const userId = event.source.userId;
+    const wordInfoResponse = textResponse(`単語: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`);
 
     if (lastKana === 'ン') {
-      await db.removeUserLastKana(userId);
-      return client.replyMessage(event.replyToken,
-        [
-          textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
-          textResponse('ンなので終了します'),
-          textResponse('再開するには適当な単語を言ってください')
-        ])
+      await db.removeUserLastKana(event.source.userId);
+      return reply([
+        wordInfoResponse,
+        textResponse('ンなので終了します'),
+        textResponse('再開するには適当な単語を言ってください')
+      ]);
     }
 
-    const botLastKana = await db.obtainUserLastKana(userId);
+    const botLastKana = await db.obtainUserLastKana(event.source.userId);
     if (!botLastKana || firstKana === botLastKana) {
-      const nextWord = next_word(tokenizer, lastKana)
+      const nextWord = next_word(tokenizer, lastKana);
       if (!nextWord) {
-        return client.replyMessage(event.replyToken, textResponse("参りました"));
+        return reply(textResponse("参りました"));
       }
-      const nextBotLastKana = kana_util.lastKana(nextWord.kana)
-      const response = [
-        textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
+      const nextBotLastKana = kana_util.lastKana(nextWord.kana);
+      await db.updateUserLastKana(event.source.userId, nextBotLastKana);
+      return reply([
+        wordInfoResponse,
         textResponse(`${nextWord.word} (${nextWord.kana} : ${nextBotLastKana}) `)
-      ]
-      await db.updateUserLastKana(userId, nextBotLastKana)
-      return client.replyMessage(event.replyToken, response)
+      ]);
     }
     else {
-      const response_1 = [
+      return reply([
         textResponse(`前の単語は${botLastKana}で終わりましたが、${event.message.text} (${result.kana}) は${firstKana}から始まります`),
         textResponse(`${botLastKana}から始まる単語を入力してください`)
-      ]
-      return client.replyMessage(event.replyToken, response_1)
+      ]);
     }
 
   }
+  else if (result.error_reason === word_verifier.error_reasons.COMPOUND_NOUN) {
+    const surfaces = result.tokens.map(token => token.surface_form);
+    return reply([
+      textResponse(`${event.message.text}は ${surfaces.join(' + ')} の複合語です。`),
+      textResponse('実在する言葉かどうか判定できないので、複合語は使えません。')
+    ]);
+  }
+  else if (result.error_reason === word_verifier.error_reasons.UNKNOWN_WORD) {
+    return reply([
+      textResponse(`${event.message.text}は辞書に載っていません。`),
+      textResponse('辞書に載っている名詞しか使えません')
+    ]);
+  }
+  else if (result.error_reason === word_verifier.error_reasons.NOT_A_NOUN) {
+    return reply([
+      textResponse(`「${event.message.text}」は${result.pos}です。`),
+      textResponse('名詞しか使えません。')
+    ]);
+  }
+  else if (result.error_reason === word_verifier.error_reasons.NOT_A_WORD) {
+    const tokens = result.tokens.map(token => `${token.surface_form} : ${word_verifier.friendlyPos(token)}`);
+    return reply([
+      textResponse(`形態素解析の結果、\n${tokens.join('\n')}\nとなりました。`),
+      textResponse(`「${event.message.text}」は名詞ではないのでしりとりには使えません。`)
+    ]);
+  }
   else {
-    let response;
-    if (result.error_reason === word_verifier.error_reasons.COMPOUND_NOUN) {
-      const surfaces = result.tokens.map(token => token.surface_form);
-      response = [
-        textResponse(`${event.message.text}は ${surfaces.join(' + ')} の複合語です。`),
-        textResponse('実在する言葉かどうか判定できないので、複合語は使えません。')
-      ];
-    }
-    else if (result.error_reason === word_verifier.error_reasons.UNKNOWN_WORD) {
-      response = [
-        textResponse(`${event.message.text}は辞書に載っていません。`),
-        textResponse('辞書に載っている名詞しか使えません')
-      ];
-    }
-    else if (result.error_reason === word_verifier.error_reasons.NOT_A_NOUN) {
-      response = [
-        textResponse(`「${event.message.text}」は${result.pos}です。`),
-        textResponse('名詞しか使えません。')
-      ];
-    }
-    else if (result.error_reason === word_verifier.error_reasons.NOT_A_WORD) {
-      const tokens = result.tokens.map(token => `${token.surface_form} : ${word_verifier.friendlyPos(token)}`);
-      response = [
-        textResponse(`形態素解析の結果、\n${tokens.join('\n')}\nとなりました。`),
-        textResponse(`「${event.message.text}」は名詞ではないのでしりとりには使えません。`)
-      ];
-    }
-    else {
-      console.assert(false);
-      response = textResponse(`[実績解除] 有能デバッガー\nあなたはこのBOTの開発者が気づかなかったバグを見つけ出した！`);
-    };
-    return client.replyMessage(event.replyToken, response);
+    console.assert(false);
+    return reply(textResponse(`[実績解除] 有能デバッガー\nあなたはこのBOTの開発者が気づかなかったバグを見つけ出した！`));
   }
 
 
