@@ -50,10 +50,15 @@ function handleEvent(event) {
   }
 
   return getTokenizerPromise().then(tokenizer => {
-    const result = word_analyzer.analyzeWord(tokenizer, event.message.text);
+    const result = word_analyzer.analyzeWord(tokenizer, kana_util.han2zen(event.message.text));
 
     if (result.succeeded) {
-      const response = textResponse(`名詞: ${result.surface}、よみ: ${result.kana}`);
+      const firstKana = kana_util.firstKana(result.kana);
+      const lastKana = kana_util.lastKana(result.kana);
+      const response = [
+        textResponse(`名詞: ${result.surface}、よみ: ${result.kana}`),
+        textResponse(`最初の文字は${firstKana}、最後の文字は${lastKana}`)
+    ];
       // todo 前の言葉との連続性の確認と、データベースの更新処理と、新しい名詞を返す処理
       return client.replyMessage(event.replyToken, response);
     } else {
@@ -83,7 +88,7 @@ function handleEvent(event) {
         const tokens = result.tokens.map(token => `${token.surface_form} : ${word_analyzer.friendlyPos(token)}`);
         response = [
           textResponse(`形態素解析の結果、\n${tokens.join('\n')}\nとなりました。`),
-          textResponse(`「${event.message.text}」は名詞ではないようです`)
+          textResponse(`「${event.message.text}」は名詞ではないのでしりとりには使えません。`)
         ];
       }
       else {
