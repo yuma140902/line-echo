@@ -6,6 +6,7 @@ const express = require('express')
 const line = require('@line/bot-sdk')
 const kuromoji = require('kuromoji')
 const word_analyzer = require('./word-analyzer')
+const kana_util = require('./kana-util')
 
 const dic_path = path.join(__dirname, './node_modules/kuromoji/dict') + '/'
 
@@ -79,8 +80,12 @@ function handleEvent(event) {
         ];
       }
       else if (result.error_reason === word_analyzer.error_reasons.NOT_A_WORD) {
+        const tokens = result.tokens.map(token => `${token} : ${word_analyzer.friendlyPos(token)}`);
         response = [
-          textResponse(JSON.stringify(result.tokens, undefined, '　')),
+          textResponse(
+            `形態素解析の結果、
+            ${tokens.join('\n')}
+            となりました。`),
           textResponse(`「${event.message.text}」は名詞ではないようです`)
         ];
       }

@@ -1,5 +1,7 @@
 'use strict'
 
+// ===== 形態素解析に関するモジュール =====
+
 const error_reasons = {
   NOT_A_WORD: "一単語ではない",
   COMPOUND_NOUN: "複合語",
@@ -10,6 +12,10 @@ const error_reasons = {
 // tokenが既知の単語であり、かつその品詞がposであるかどうか確認する
 const posEquals = (token, pos) =>
   token.word_type === 'KNOWN' && token.pos === pos;
+
+const friendlyPos = (token) => 
+  (token.word_type === 'UNKNOWN' ? '辞書に載っていない' : '') + token.pos;
+
 
 const analyzeWord = (tokenizer, text) => {
 
@@ -37,7 +43,7 @@ const analyzeWord = (tokenizer, text) => {
       succeeded: false,
       tokens: tokens,
       error_reason: error_reasons.NOT_A_NOUN,
-      pos: tokens[0].pos
+      pos: friendlyPos(tokens[0])
     }
   }
   else {
@@ -61,5 +67,7 @@ const analyzeWord = (tokenizer, text) => {
   }
 }
 
+
 module.exports.analyzeWord = analyzeWord;
+module.exports.friendlyPos = friendlyPos;
 module.exports.error_reasons = error_reasons;
