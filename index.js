@@ -49,10 +49,16 @@ function handleEvent(event) {
       };
       return client.replyMessage(event.replyToken, response);
     } else {
-      const response = {
-        "type": "text",
-        "text": `${result.tokens}`
-      };
+      const response = [
+        {
+          "type": "text",
+          "text": JSON.stringify(result.tokens, undefined, '　')
+        },
+        {
+          "type": "text",
+          "text": `${event.message.text} は名詞ではないようです`
+        }
+      ];
       return client.replyMessage(event.replyToken, response);
     }
 
