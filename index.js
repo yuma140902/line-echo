@@ -38,20 +38,28 @@ function handleEvent(event) {
     return Promise.resolve(null);
   }
 
-  console.log("dic_path:", dic_path);
-  console.log("__dirname", __dirname);
-  kuromoji.builder({ dicPath: dic_path }).build(function (err, tokenizer) {
-    // tokenizer is ready
-    var path = tokenizer.tokenize(event.message.text);
+  return getTokenizerPromise().then(tokenizer => {
+    const path = tokenizer.tokenize(event.message.text);
     console.log("tokens:", path);
+
+    const response = {
+      "type": "text",
+      "text": event.message.text
+    };
+
+    return client.replyMessage(event.replyToken, response);
   });
 
-  const response = {
-    "type": "text",
-    "text": event.message.text
-  };
 
-  return client.replyMessage(event.replyToken, response);
+}
+
+function getTokenizerPromise() {
+  return new Promise((resolve) => {
+    kuromoji.builder({ dicPath: dic_path }).build(function (err, tokenizer) {
+      // tokenizer is ready
+      resolve(tokenizer);
+    });
+  })
 }
 
 app.listen(port, () => console.log(`Listening on :${port}`));
