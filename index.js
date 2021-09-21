@@ -58,21 +58,43 @@ function handleEvent(event) {
     const firstKana = kana_util.firstKana(result.kana);
     const lastKana = kana_util.lastKana(result.kana);
 
-    // todo 前の言葉との連続性の確認と、データベースの更新処理と、新しい名詞を返す処理
+    const userId = event.source.userId;
+
+    if (lastKana === 'ン') {
+      return db.removeUserLastKana(userId)
+        .then(() => client.replyMessage(event.replyToken, textResponse('ンで終わったのであなたの負けです')));
+    }
+
+    return db.obtainUserLastKana(userId)
+      .then(
+        botLastKana => {
+          if (!botLastKana || firstKana === botLastKana) {
+            const nextBotLastKana = kana_util.lastKana(nextWord.kana);
+            const response = [
+              textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
+              textResponse(`${nextWord.word} (${nextWord.kana} : ${nextBotLastKana}) `)
+            ];
+            return db.updateUserLastKana(userId, nextBotLastKana)
+              .then(
+                () => {
+                  return client.replyMessage(event.replyToken, response);
+                }
+              )
+          }
+          else {
+            const response = [
+              textResponse(`前の単語は${botLastKana}で終わりましたが、${event.message.text}は${firstKana}から始まります`),
+              textResponse(`${botLastKana}から始まる単語を入力してください`)
+            ];
+            return client.replyMessage(event.replyToken, response);
+          }
+
+        }
+      );
 
     const nextWord = next_word(tokenizer, lastKana);
 
-    const userId = event.source.userId;
-    console.log("obtain");
-    db.obtainUserLastKana(userId);
-    console.log("update");
-    db.updateUserLastKana(userId, lastKana);
 
-    const response = [
-      textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
-      textResponse(`${nextWord.word} (${nextWord.kana} : ${kana_util.lastKana(nextWord.kana)}) `)
-    ];
-    return client.replyMessage(event.replyToken, response);
   }
   else {
     let response;

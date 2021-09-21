@@ -30,7 +30,7 @@ const obtainUserLastKana = (userId) => {
     .query(sql, [userId])
     .then(res => {
       console.log(res);
-      return res.rows[0];
+      return res.rows[0].last_letter;
     })
     .catch(err => {
       console.error("エラー: obtainUserLastKana()");
