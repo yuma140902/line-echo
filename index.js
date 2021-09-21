@@ -64,9 +64,9 @@ function handleEvent(event) {
 
     const userId = event.source.userId;
     console.log("obtain");
-    await db.obtainUserLastKana(userId);
+    db.obtainUserLastKana(userId);
     console.log("update");
-    await db.updateUserLastKana(userId, lastKana);
+    db.updateUserLastKana(userId, lastKana);
 
     const response = [
       textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
