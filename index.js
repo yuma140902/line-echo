@@ -109,10 +109,15 @@ function handleEvent(event) {
 }
 
 function getTokenizerPromise() {
+  console.log('Loading Kuromoji.js');
   return new Promise((resolve) => {
     kuromoji.builder({ dicPath: dic_path }).build(function (err, tokenizer) {
       // tokenizer is ready
       resolve(tokenizer);
+      console.log('Loaded Kuromoji.js');
+      if(err) {
+        console.error(err);
+      }
     });
   })
 }
