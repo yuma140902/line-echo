@@ -74,7 +74,7 @@ function handleEvent(event) {
       const numWords = freqlist[lastKana].length;
       do {
         nextWord = freqlist[lastKana][randomRanged(0, numWords)];
-      } while (!word_analyzer.analyzeWord(tokenizer, nextWord).succeeded);
+      } while (!word_analyzer.analyzeWord(tokenizer, nextWord[1]).succeeded);
     }
     else {
       console.assert(false);
@@ -83,8 +83,7 @@ function handleEvent(event) {
     }
 
     const response = [
-      textResponse(`名詞: ${result.surface}、よみ: ${result.kana}`),
-      textResponse(`最初の文字は${firstKana}、最後の文字は${lastKana}`),
+      textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
       textResponse(`${nextWord[1]} (${nextWord[0]} : ${kana_util.lastKana(nextWord[0])}) `)
     ];
     return client.replyMessage(event.replyToken, response);
