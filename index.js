@@ -38,13 +38,13 @@ app.post('/webhook', line.middleware(config), (req, res) => {
 
 function textResponse(text) {
   return {
-    "type": "text",
-    "text": text
+    'type': 'text',
+    'text': text
   };
 }
 
 function handleEvent(event) {
-  console.log("event:", JSON.stringify(event));
+  console.log('event:', JSON.stringify(event));
 
   if (event.type !== 'message' || event.message.type !== 'text') {
     return Promise.resolve(null);
@@ -67,28 +67,28 @@ function handleEvent(event) {
       if (result.error_reason === word_analyzer.error_reasons.COMPOUND_NOUN) {
         const surfaces = result.tokens.map(token => token.surface_form);
         response = [
-          textResponse(`${event.message.text}は ${surfaces.join(" + ")} の複合語です。`),
+          textResponse(`${event.message.text}は ${surfaces.join(' + ')} の複合語です。`),
           textResponse('実在する言葉かどうか判定できないので、複合語は使えません。')
         ];
       }
       else if (result.error_reason === word_analyzer.error_reasons.UNKNOWN_WORD) {
         response = [
           textResponse(`は辞書に載っていません。`),
-          textResponse("辞書に載っている名詞しか使えません")
+          textResponse('辞書に載っている名詞しか使えません')
         ];
       }
       else if (result.error_reason === word_analyzer.error_reasons.NOT_A_NOUN) {
         response = [
           textResponse(`「${event.message.text}」は${result.pos}です。`),
-          textResponse("名詞しか使えません。")
+          textResponse('名詞しか使えません。')
         ];
       }
       else if (result.error_reason === word_analyzer.error_reasons.KANA_INCLUDED) {
         response = [
-          textResponse("入力に括弧が含まれています。"),
-          textResponse("心優しいあなたはおそらく読み仮名を入力してくれたのでしょう。"),
-          textResponse("でもこのBOTは漢字が読めるので読み仮名は不要です。"),
-          textResponse("いくらでも難読単語を送りつけてください。")
+          textResponse('入力に括弧が含まれています。'),
+          textResponse('心優しいあなたはおそらく読み仮名を入力してくれたのでしょう。'),
+          textResponse('でもこのBOTは漢字が読めるので読み仮名は不要です。'),
+          textResponse('いくらでも難読単語を送りつけてください。')
         ];
       }
       else if (result.error_reason === word_analyzer.error_reasons.NOT_A_WORD) {
