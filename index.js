@@ -80,20 +80,15 @@ function handleEvent(event) {
         ];
       }
       else if (result.error_reason === word_analyzer.error_reasons.NOT_A_WORD) {
-        const tokens = result.tokens.map(token => `${token} : ${word_analyzer.friendlyPos(token)}`);
+        const tokens = result.tokens.map(token => `${token.surface_form} : ${word_analyzer.friendlyPos(token)}`);
         response = [
-          textResponse(
-            `形態素解析の結果、
-            ${tokens.join('\n')}
-            となりました。`),
+          textResponse(`形態素解析の結果、\n${tokens.join('\n')}\nとなりました。`),
           textResponse(`「${event.message.text}」は名詞ではないようです`)
         ];
       }
       else {
         console.assert(false);
-        response = textResponse(
-          `[実績解除] 有能デバッガー
-          あなたはこのBOTの開発者が気づかなかったバグを見つけ出した！`);
+        response = textResponse(`[実績解除] 有能デバッガー\nあなたはこのBOTの開発者が気づかなかったバグを見つけ出した！`);
       };
       return client.replyMessage(event.replyToken, response);
     }
