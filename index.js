@@ -46,7 +46,7 @@ function textResponse(text) {
   };
 }
 
-function handleEvent(event) {
+async function handleEvent(event) {
   console.log('event:', JSON.stringify(event));
 
   if (event.type !== 'message' || event.message.type !== 'text' || event.source.type !== 'user') {
@@ -61,36 +61,33 @@ function handleEvent(event) {
     const userId = event.source.userId;
 
     if (lastKana === 'ン') {
-      return db.removeUserLastKana(userId)
-        .then(() => client.replyMessage(event.replyToken,
-          [textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
-          textResponse('ンで終わったのであなたの負けです')]));
+      await db.removeUserLastKana(userId);
+      return client.replyMessage(event.replyToken,
+        [textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
+        textResponse('ンで終わったのであなたの負けです')])
     }
 
-    return db.obtainUserLastKana(userId)
-      .then(
-        async botLastKana => {
-          if (!botLastKana || firstKana === botLastKana) {
-            const nextWord = next_word(tokenizer, lastKana);
-            if (!nextWord) return client.replyMessage(event.replyToken, textResponse("参りました"));
-            const nextBotLastKana = kana_util.lastKana(nextWord.kana);
-            const response = [
-              textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
-              textResponse(`${nextWord.word} (${nextWord.kana} : ${nextBotLastKana}) `)
-            ];
-            await db.updateUserLastKana(userId, nextBotLastKana)
-            return client.replyMessage(event.replyToken, response)
-          }
-          else {
-            const response = [
-              textResponse(`前の単語は${botLastKana}で終わりましたが、${event.message.text}は${firstKana}から始まります`),
-              textResponse(`${botLastKana}から始まる単語を入力してください`)
-            ];
-            return client.replyMessage(event.replyToken, response);
-          }
-
-        }
-      );
+    const botLastKana = await db.obtainUserLastKana(userId);
+    if (!botLastKana || firstKana === botLastKana) {
+      const nextWord = next_word(tokenizer, lastKana)
+      if (!nextWord) {
+        return client.replyMessage(event.replyToken, textResponse("参りました"));
+      }
+      const nextBotLastKana = kana_util.lastKana(nextWord.kana)
+      const response = [
+        textResponse(`名詞: ${result.surface}、よみ: ${result.kana}、最後の文字は${lastKana}`),
+        textResponse(`${nextWord.word} (${nextWord.kana} : ${nextBotLastKana}) `)
+      ]
+      await db.updateUserLastKana(userId, nextBotLastKana)
+      return client.replyMessage(event.replyToken, response)
+    }
+    else {
+      const response_1 = [
+        textResponse(`前の単語は${botLastKana}で終わりましたが、${event.message.text}は${firstKana}から始まります`),
+        textResponse(`${botLastKana}から始まる単語を入力してください`)
+      ]
+      return client.replyMessage(event.replyToken, response_1)
+    }
 
   }
   else {
