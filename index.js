@@ -3,6 +3,7 @@ const path = require('path')
 const express = require('express')
 const line = require('@line/bot-sdk')
 const kuromoji = require('kuromoji')
+const word_analyzer = require('./word-analyzer')
 
 const dic_path = path.join(__dirname, './node_modules/kuromoji/dict') + '/'
 
@@ -39,15 +40,23 @@ function handleEvent(event) {
   }
 
   return getTokenizerPromise().then(tokenizer => {
-    const path = tokenizer.tokenize(event.message.text);
-    console.log("tokens:", path);
+    const result = word_analyzer.analyzeWord(tokenizer, event.message.text);
 
-    const response = {
-      "type": "text",
-      "text": event.message.text
-    };
+    if (result.succeeded) {
+      const response = {
+        "type": "text",
+        "text": `名詞: ${result.surface}、よみ: ${result.kana}`
+      };
+      return client.replyMessage(event.replyToken, response);
+    } else {
+      const response = {
+        "type": "text",
+        "text": `${result.tokens}`
+      };
+      return client.replyMessage(event.replyToken, response);
+    }
 
-    return client.replyMessage(event.replyToken, response);
+
   });
 
 
