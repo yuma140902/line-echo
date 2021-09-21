@@ -70,12 +70,26 @@ function handleEvent(event) {
           textResponse("名詞しか使えません。")
         ];
       }
+      else if (result.error_reason === word_analyzer.error_reasons.KANA_INCLUDED) {
+        response = [
+          textResponse("入力に括弧が含まれています。"),
+          textResponse("心優しいあなたはおそらく読み仮名を入力してくれたのでしょう。"),
+          textResponse("でもこのBOTは漢字が読めるので読み仮名は不要です。"),
+          textResponse("いくらでも難読単語を送りつけてください。")
+        ];
+      }
       else if (result.error_reason === word_analyzer.error_reasons.NOT_A_WORD) {
         response = [
           textResponse(JSON.stringify(result.tokens, undefined, '　')),
           textResponse(`「${event.message.text}」は名詞ではないようです`)
         ];
       }
+      else {
+        console.assert(false);
+        response = textResponse(
+          `[実績解除] 有能デバッガー
+          あなたはこのBOTの開発者が気づかなかったバグを見つけ出した！`);
+      };
       return client.replyMessage(event.replyToken, response);
     }
 

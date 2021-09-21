@@ -3,7 +3,8 @@
 const error_reasons = {
   NOT_A_WORD: "一単語ではない",
   COMPOUND_NOUN: "複合語",
-  NOT_A_NOUN: "名詞ではない"
+  NOT_A_NOUN: "名詞ではない",
+  KANA_INCLUDED: "よみがなは不要"
 }
 
 // tokenが既知の単語であり、かつその品詞がposであるかどうか確認する
@@ -12,6 +13,13 @@ const posEquals = (token, pos) =>
 
 const analyzeWord = (tokenizer, text) => {
 
+  // 丸括弧が含まれるときは、ユーザーがよみがなを入力してくれた可能性が高い
+  if (text.includes('(') || text.includes(')') || text.includes('（') || text.includes('）')) {
+    return {
+      succeeded: false,
+      error_reason: error_reasons.KANA_INCLUDED
+    }
+  }
 
   const tokens = tokenizer.tokenize(text);
 
