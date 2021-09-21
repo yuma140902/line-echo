@@ -74,6 +74,6 @@ const verifyWord = (tokenizer, text) => {
 }
 
 
-module.exports.analyzeWord = verifyWord;
+module.exports.verifyWord = verifyWord;
 module.exports.friendlyPos = friendlyPos;
 module.exports.error_reasons = error_reasons;
