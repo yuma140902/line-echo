@@ -1,27 +1,24 @@
-'use strict'
-
-const https = require('https')
-const path = require('path')
-const express = require('express')
-const line = require('@line/bot-sdk')
-const kuromoji = require('kuromoji')
-const word_verifier = require('./word-verifier')
-const kana_util = require('./kana-util')
-const next_word = require('./next-word')
-const db = require('./db')
+import path from 'path'
+import express from 'express'
+import * as line from '@line/bot-sdk'
+import kuromoji from 'kuromoji'
+import * as word_verifier from './word-verifier'
+import * as kana_util from './kana-util'
+import next_word from './next-word'
+import * as db from './db'
 
 const dic_path = path.join(__dirname, '../node_modules/kuromoji/dict') + '/'
 
 const port = process.env.PORT || 3000;
 
 const config = {
-  channelAccessToken: process.env.LINE_ACCESS_TOKEN,
-  channelSecret: process.env.CHANNEL_SECRET
+  channelAccessToken: process.env.LINE_ACCESS_TOKEN || 'LINE ACCESS TOKEN IS NOT SET',
+  channelSecret: process.env.CHANNEL_SECRET || 'CHANNEL SECRET IS NOT SET'
 };
 
 const client = new line.Client(config);
 
-let tokenizer;
+let tokenizer: kuromoji.Tokenizer<kuromoji.IpadicFeatures>;
 
 const app = express();
 
@@ -39,17 +36,17 @@ app.post('/webhook', line.middleware(config), (req, res) => {
     });
 });
 
-function textResponse(text) {
+function textResponse(text: string): line.TextMessage {
   return {
     'type': 'text',
     'text': text
   };
 }
 
-async function handleEvent(event) {
+async function handleEvent(event: line.MessageEvent) {
   console.log('event:', JSON.stringify(event));
 
-  const reply = response => client.replyMessage(event.replyToken, response);
+  const reply = (response: line.Message | line.Message[]) => client.replyMessage(event.replyToken, response);
 
   if (event.type !== 'message' || event.message.type !== 'text' || event.source.type !== 'user') {
     return Promise.resolve(null);
@@ -92,27 +89,27 @@ async function handleEvent(event) {
     }
 
   }
-  else if (result.error_reason === word_verifier.error_reasons.COMPOUND_NOUN) {
-    const surfaces = result.tokens.map(token => token.surface_form);
+  else if (result.error_reason === 'COMPOUND_NOUN') {
+    const surfaces = result.tokens.map((token: any) => token.surface_form);
     return reply([
       textResponse(`${event.message.text}は ${surfaces.join(' + ')} の複合語です。`),
       textResponse('実在する言葉かどうか判定できないので、複合語は使えません。')
     ]);
   }
-  else if (result.error_reason === word_verifier.error_reasons.UNKNOWN_WORD) {
+  else if (result.error_reason === 'UNKNOWN_WORD') {
     return reply([
       textResponse(`${event.message.text}は辞書に載っていません。`),
       textResponse('辞書に載っている名詞しか使えません')
     ]);
   }
-  else if (result.error_reason === word_verifier.error_reasons.NOT_A_NOUN) {
+  else if (result.error_reason === 'NOT_A_NOUN') {
     return reply([
       textResponse(`「${event.message.text}」は${result.pos}です。`),
       textResponse('名詞しか使えません。')
     ]);
   }
-  else if (result.error_reason === word_verifier.error_reasons.NOT_A_WORD) {
-    const tokens = result.tokens.map(token => `${token.surface_form} : ${word_verifier.friendlyPos(token)}`);
+  else if (result.error_reason === 'NOT_A_WORD') {
+    const tokens = result.tokens.map((token: any) => `${token.surface_form} : ${word_verifier.friendlyPos(token)}`);
     return reply([
       textResponse(`形態素解析の結果、\n${tokens.join('\n')}\nとなりました。`),
       textResponse(`「${event.message.text}」は名詞ではないのでしりとりには使えません。`)
@@ -126,7 +123,7 @@ async function handleEvent(event) {
 
 }
 
-function getTokenizerPromise() {
+function getTokenizerPromise(): Promise<kuromoji.Tokenizer<kuromoji.IpadicFeatures>> {
   console.log('Loading Kuromoji.js');
   return new Promise((resolve) => {
     kuromoji.builder({ dicPath: dic_path }).build(function (err, tokenizer) {

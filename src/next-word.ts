@@ -1,11 +1,10 @@
-'use strict'
-
-const word_verifier = require('./word-verifier')
-const freqlist = require('../rsc/freqlist_ja.json')
+import kuromoji from 'kuromoji'
+import * as word_verifier from './word-verifier'
+const freqlist = require('../rsc/freqlist_ja.json');
 
 // ===== 次の言葉を考えるモジュール =====
 
-function randomRanged(begin, end) {
+function randomRanged(begin: number, end: number) {
   begin = Math.ceil(begin);
   end = Math.floor(end);
   return Math.floor(Math.random() * (end - begin) + begin);
@@ -13,7 +12,12 @@ function randomRanged(begin, end) {
 
 const MAX_TRIAL = 12;
 
-const nextWord = (tokenizer, lastKana) => {
+interface NextWordInfo {
+  kana: string,
+  word: string
+}
+
+const nextWord = (tokenizer: kuromoji.Tokenizer<any>, lastKana: string): NextWordInfo | undefined => {
 
   if (!freqlist[lastKana]) {
     console.assert(false, `not implemented next-word (lastKana: ${lastKana})`);
@@ -43,4 +47,4 @@ const nextWord = (tokenizer, lastKana) => {
   };
 }
 
-module.exports = nextWord;
+export default nextWord;

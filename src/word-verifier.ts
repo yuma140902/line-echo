@@ -1,29 +1,48 @@
-'use strict'
-const kana_util = require('./kana-util')
+import kuromoji from 'kuromoji'
+import * as kana_util from './kana-util'
 
 // ===== 形態素解析に関するモジュール =====
 
+type ErrorReason = 'NOT_A_WORD' | 'COMPOUND_NOUN' | 'UNKNOWN_WORD';
 
-const error_reasons = {
-  NOT_A_WORD: "一単語ではない",
-  COMPOUND_NOUN: "複合語",
-  NOT_A_NOUN: "名詞ではない",
-  UNKNOWN_WORD: "辞書に載っていない名詞"
+type VerifyWordResult = Success | Fail;
+
+type Success = {
+  succeeded: true,
+  tokens: kuromoji.IpadicFeatures[],
+  surface: string,
+  kana: string
 }
 
+type Fail = FailBase | FailNotANoun;
+
+type FailBase = {
+  succeeded: false,
+  tokens: kuromoji.IpadicFeatures[],
+  error_reason: ErrorReason
+}
+
+type FailNotANoun = {
+  succeeded: false,
+  tokens: kuromoji.IpadicFeatures[],
+  error_reason: 'NOT_A_NOUN',
+  pos: string
+}
+
+
 // tokenが既知の単語であり、かつその品詞がposであるかどうか確認する
-const posEqualsAndKnown = (token, pos) =>
+const posEqualsAndKnown = (token: kuromoji.IpadicFeatures, pos: string): boolean =>
   token.word_type === 'KNOWN' && token.pos === pos;
 
-const friendlyPos = (token) =>
+export const friendlyPos = (token: kuromoji.IpadicFeatures): string =>
   (token.word_type === 'UNKNOWN' ? '辞書に載っていない' : '') + token.pos;
 
 
-const preprocess = (text) =>
+const preprocess = (text: string): string =>
   kana_util.han2zen(text.trim());
 
 
-const verifyWord = (tokenizer, text) => {
+export const verifyWord = (tokenizer: kuromoji.Tokenizer<kuromoji.IpadicFeatures>, text: string): VerifyWordResult => {
   text = preprocess(text);
 
   const tokens = tokenizer.tokenize(text);
@@ -33,14 +52,14 @@ const verifyWord = (tokenizer, text) => {
       succeeded: true,
       tokens: tokens,
       surface: tokens[0].surface_form,
-      kana: tokens[0].reading
+      kana: tokens[0].reading || ''
     };
   }
   else if (tokens.length === 1 && tokens[0].word_type === 'UNKNOWN') {
     return {
       succeeded: false,
       tokens: tokens,
-      error_reason: error_reasons.UNKNOWN_WORD
+      error_reason: 'NOT_A_WORD'
     }
   }
   // 1単語だが名詞ではないとき
@@ -48,7 +67,7 @@ const verifyWord = (tokenizer, text) => {
     return {
       succeeded: false,
       tokens: tokens,
-      error_reason: error_reasons.NOT_A_NOUN,
+      error_reason: 'NOT_A_NOUN',
       pos: friendlyPos(tokens[0])
     };
   }
@@ -59,7 +78,7 @@ const verifyWord = (tokenizer, text) => {
       return {
         succeeded: false,
         tokens: tokens,
-        error_reason: error_reasons.COMPOUND_NOUN
+        error_reason: 'COMPOUND_NOUN'
       };
     }
     // その他複数の単語
@@ -67,13 +86,8 @@ const verifyWord = (tokenizer, text) => {
       return {
         succeeded: false,
         tokens: tokens,
-        error_reason: error_reasons.NOT_A_WORD
+        error_reason: 'NOT_A_WORD'
       };
     }
   }
 }
-
-
-module.exports.verifyWord = verifyWord;
-module.exports.friendlyPos = friendlyPos;
-module.exports.error_reasons = error_reasons;

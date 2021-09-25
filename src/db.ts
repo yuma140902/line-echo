@@ -1,6 +1,4 @@
-'use strict'
-
-const { Pool } = require('pg');
+import { Pool } from 'pg'
 
 // ===== データベースに関するモジュール =====
 
@@ -9,7 +7,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-const updateUserLastKana = (userId, lastKana) => {
+export const updateUserLastKana = (userId: string, lastKana: string): Promise<void> => {
   const sql = 'INSERT INTO "UserLastLetter" (user_id, last_letter) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET last_letter = $2';
   return pool
     .query(sql, [userId, lastKana])
@@ -22,7 +20,7 @@ const updateUserLastKana = (userId, lastKana) => {
     });
 }
 
-const obtainUserLastKana = (userId) => {
+export const obtainUserLastKana = (userId: string): Promise<string | undefined> => {
   const sql = 'SELECT last_letter from "UserLastLetter" WHERE user_id = $1 LIMIT 1';
   return pool
     .query(sql, [userId])
@@ -35,7 +33,7 @@ const obtainUserLastKana = (userId) => {
     });
 }
 
-const removeUserLastKana = (userId) => {
+export const removeUserLastKana = (userId: string): Promise<void> => {
   const sql = 'DELETE FROM "UserLastLetter" WHERE user_id = $1';
   return pool
     .query(sql, [userId])
@@ -47,7 +45,3 @@ const removeUserLastKana = (userId) => {
       console.error(err);
     });
 }
-
-module.exports.updateUserLastKana = updateUserLastKana;
-module.exports.obtainUserLastKana = obtainUserLastKana;
-module.exports.removeUserLastKana = removeUserLastKana;
