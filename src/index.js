@@ -10,7 +10,7 @@ const kana_util = require('./kana-util')
 const next_word = require('./next-word')
 const db = require('./db')
 
-const dic_path = path.join(__dirname, './node_modules/kuromoji/dict') + '/'
+const dic_path = path.join(__dirname, '../node_modules/kuromoji/dict') + '/'
 
 const port = process.env.PORT || 3000;
 

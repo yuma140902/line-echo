@@ -1,7 +1,7 @@
 'use strict'
 
 const word_verifier = require('./word-verifier')
-const freqlist = require('./rsc/freqlist_ja.json')
+const freqlist = require('../rsc/freqlist_ja.json')
 
 // ===== 次の言葉を考えるモジュール =====
 
