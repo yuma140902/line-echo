@@ -21,6 +21,7 @@ const client = new line.Client(config);
 let tokenizer: kuromoji.Tokenizer<kuromoji.IpadicFeatures>;
 
 const app = express();
+app.use(express.text());
 
 app.get('/', (req, res) => {
   res.sendStatus(200);
@@ -36,8 +37,23 @@ app.post('/webhook', line.middleware(config), (req, res) => {
     });
 });
 
+app.post('/api', (req, res) => {
+  console.log('api input:', req.body);
+
+  const message = req.body || '';
+  const userId = req.ip!;
+  getReplies(message, userId)
+    .then(responses => {
+      res.json(responses).end();
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).end();
+    })
+});
+
 async function handleLineMessageEvent(event: line.MessageEvent) {
-  console.log('event:', JSON.stringify(event));
+  console.log('line msg event:', JSON.stringify(event));
 
   const reply = (response: line.Message | line.Message[]) => client.replyMessage(event.replyToken, response);
 
